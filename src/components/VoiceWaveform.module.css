@@ -1,0 +1,32 @@
+.container {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    /* Position absolute handling will be done by parent or inline styles */
+    pointer-events: none;
+    z-index: 20;
+}
+
+.bar {
+    width: 4px;
+    background-color: var(--color-primary);
+    border-radius: 2px;
+    transform-origin: bottom;
+}
+
+/* Fallback animation if Framer Motion fails or for simple testing */
+@keyframes wave {
+
+    0%,
+    100% {
+        height: 6px;
+    }
+
+    50% {
+        height: 18px;
+    }
+}
+
+.bar.animate {
+    animation: wave 1s ease-in-out infinite;
+}

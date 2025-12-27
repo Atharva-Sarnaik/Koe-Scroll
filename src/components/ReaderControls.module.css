@@ -1,0 +1,86 @@
+.bottomBar {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    /* Reduced gap */
+    padding: 8px 24px;
+    /* Reduced padding */
+    background: rgba(0, 0, 0, 0.5);
+    /* More transparent */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 24px;
+    /* Smaller radius */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 50;
+    transition: all 0.3s ease;
+}
+
+.bottomBar:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: translateX(-50%) translateY(0);
+}
+
+.iconButton {
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iconButton:hover:not(:disabled) {
+    color: white;
+}
+
+.iconButton:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.iconButton:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.iconButton.active {
+    color: white;
+}
+
+.playButton {
+    width: 40px;
+    /* Smaller size */
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    /* Monochrome */
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.playButton:hover {
+    transform: scale(1.05);
+    background-color: #f0f0f0;
+}
+
+.playButton:active {
+    transform: scale(0.95);
+}
+
+.playButton.playing {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+}
+
+.settingsButton {
+    margin-left: 12px;
+}

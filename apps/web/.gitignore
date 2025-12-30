@@ -1,0 +1,46 @@
+# ======================
+# ENVIRONMENT VARIABLES
+# ======================
+.env
+.env.*
+!.env.example
+
+# ======================
+# SUPABASE
+# ======================
+.supabase/
+supabase/.temp/
+
+# ======================
+# AUDIO / AI OUTPUT
+# ======================
+audio_cache/
+audio_output/
+tts_cache/
+
+# ======================
+# PDF / MANGA FILES
+# ======================
+*.pdf
+manga/
+uploads/
+
+# ======================
+# BUILD / FRAMEWORK
+# ======================
+.next/
+.vite/
+out/
+
+# ======================
+# CACHE
+# ======================
+.cache/
+tmp/
+
+# ======================
+# TEST OUTPUT
+# ======================
+coverage/
+
+node_modules

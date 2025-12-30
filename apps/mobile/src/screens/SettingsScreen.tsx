@@ -77,7 +77,7 @@ export default function SettingsScreen() {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            const audioDir = (FileSystem.cacheDirectory || '') + 'audio/';
+                            const audioDir = ((FileSystem as any).cacheDirectory || '') + 'audio/';
                             const dirInfo = await FileSystem.getInfoAsync(audioDir);
                             if (dirInfo.exists) {
                                 await FileSystem.deleteAsync(audioDir);

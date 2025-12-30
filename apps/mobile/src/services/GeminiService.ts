@@ -16,7 +16,7 @@ export class GeminiService {
     }
 
     private getModel() {
-        console.log('[Gemini] Checking Keys - Secrets:', JSON.stringify(SECRETS));
+        console.log('[Gemini] Checking Keys...');
         const key = getApiKey();
         if (!key) {
             console.warn('[Gemini] Missing API Key (Env or Secrets)');

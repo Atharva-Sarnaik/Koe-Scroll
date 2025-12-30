@@ -78,99 +78,95 @@ const Reader: React.FC = () => {
     }, [nextPage, prevPage]);
 
     // --- Zoom & Pan Handlers ---
-    const handleWheel = (e: React.WheelEvent) => {
-        if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            const delta = e.deltaY * -0.01;
-            const newScale = Math.min(Math.max(1, scale + delta), 4); // Clamp between 1x and 4x
-            setScale(newScale);
-
-            // Reset position if zooming out to 1
-            if (newScale === 1) {
-                setPosition({ x: 0, y: 0 });
-            }
-        }
-    };
-
-    const handleMouseDown = (e: React.MouseEvent) => {
-        if (scale > 1) {
-            isDragging.current = true;
-            lastMousePos.current = { x: e.clientX, y: e.clientY };
-            e.preventDefault(); // Prevent text selection
-        }
-    };
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (isDragging.current && scale > 1) {
-            const deltaX = e.clientX - lastMousePos.current.x;
-            const deltaY = e.clientY - lastMousePos.current.y;
-
-            setPosition({
-                x: position.x + deltaX,
-                y: position.y + deltaY
-            });
-
-            lastMousePos.current = { x: e.clientX, y: e.clientY };
-        }
-    };
-
-    const handleMouseUp = () => {
-        isDragging.current = false;
-    };
-
     // --- Touch Handlers (Mobile) ---
     const lastTouchDistance = useRef<number | null>(null);
 
-    const getTouchDistance = (e: React.TouchEvent) => {
-        if (e.touches.length < 2) return 0;
-        const touch1 = e.touches[0];
-        const touch2 = e.touches[1];
+    const getTouchDistance = (e: React.TouchEvent | TouchEvent) => {
+        // Handle both React SyntheticEvent and Native TouchEvent
+        const touches = (e as any).touches || e.touches;
+        if (touches.length < 2) return 0;
+        const touch1 = touches[0];
+        const touch2 = touches[1];
         return Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
     };
 
-    const handleTouchStart = (e: React.TouchEvent) => {
-        if (e.touches.length === 2) {
-            // Pinch Start
-            lastTouchDistance.current = getTouchDistance(e);
-        } else if (e.touches.length === 1 && scale > 1) {
-            // Pan Start
-            isDragging.current = true;
-            lastMousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        }
-    };
+    // --- Glue Event Listeners (Passive Fix) ---
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
 
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (e.touches.length === 2) {
-            // Pinch Zoom
-            const dist = getTouchDistance(e);
-            if (lastTouchDistance.current && dist > 0) {
-                const delta = dist - lastTouchDistance.current;
-                const sensitivity = 0.005;
-                const newScale = Math.min(Math.max(1, scale + delta * sensitivity), 4);
+        const onWheel = (e: WheelEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                const delta = e.deltaY * -0.01;
+                // Use functional update for scale within event listener to get fresh state? 
+                // No, 'scale' is a dependency of useEffect, so this effect re-runs on scale change.
+                const newScale = Math.min(Math.max(1, scale + delta), 4);
                 setScale(newScale);
-                lastTouchDistance.current = dist;
 
-                if (newScale === 1) setPosition({ x: 0, y: 0 });
+                if (newScale === 1) {
+                    setPosition({ x: 0, y: 0 });
+                }
             }
-        } else if (e.touches.length === 1 && isDragging.current && scale > 1) {
-            // Pan
-            const touch = e.touches[0];
-            const deltaX = touch.clientX - lastMousePos.current.x;
-            const deltaY = touch.clientY - lastMousePos.current.y;
+        };
 
-            setPosition({
-                x: position.x + deltaX,
-                y: position.y + deltaY
-            });
+        const onTouchStart = (e: TouchEvent) => {
+            if (e.touches.length === 2) {
+                lastTouchDistance.current = getTouchDistance(e);
+            } else if (e.touches.length === 1 && scale > 1) {
+                isDragging.current = true;
+                lastMousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        };
 
-            lastMousePos.current = { x: touch.clientX, y: touch.clientY };
-        }
-    };
+        const onTouchMove = (e: TouchEvent) => {
+            if (e.touches.length === 2) {
+                if (e.cancelable) e.preventDefault();
+                const dist = getTouchDistance(e);
+                if (lastTouchDistance.current && dist > 0) {
+                    const delta = dist - lastTouchDistance.current;
+                    const sensitivity = 0.005;
+                    const newScale = Math.min(Math.max(1, scale + delta * sensitivity), 4);
+                    setScale(newScale);
+                    lastTouchDistance.current = dist;
 
-    const handleTouchEnd = () => {
-        isDragging.current = false;
-        lastTouchDistance.current = null;
-    };
+                    if (newScale === 1) setPosition({ x: 0, y: 0 });
+                }
+            } else if (e.touches.length === 1 && isDragging.current && scale > 1) {
+                if (e.cancelable) e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - lastMousePos.current.x;
+                const deltaY = touch.clientY - lastMousePos.current.y;
+
+                // setPosition might not support functional updates if it comes from a custom context context value that is just 'setPosition(val)'.
+                // Using 'position' from usage scope (dependency)
+                setPosition({
+                    x: position.x + deltaX,
+                    y: position.y + deltaY
+                });
+
+                lastMousePos.current = { x: touch.clientX, y: touch.clientY };
+            }
+        };
+
+        const onTouchEnd = () => {
+            isDragging.current = false;
+            lastTouchDistance.current = null;
+        };
+
+        // Attach with passive: false to allow preventDefault
+        container.addEventListener('wheel', onWheel, { passive: false });
+        container.addEventListener('touchstart', onTouchStart, { passive: false });
+        container.addEventListener('touchmove', onTouchMove, { passive: false });
+        container.addEventListener('touchend', onTouchEnd);
+
+        return () => {
+            container.removeEventListener('wheel', onWheel);
+            container.removeEventListener('touchstart', onTouchStart);
+            container.removeEventListener('touchmove', onTouchMove);
+            container.removeEventListener('touchend', onTouchEnd);
+        };
+    }, [scale, isDragging, setScale, setPosition, position]);
 
     const handleBubbleClick = async (bubbleId: string, text: string, voiceId?: string) => {
         console.log("Bubble clicked:", bubbleId);
@@ -276,7 +272,7 @@ const Reader: React.FC = () => {
             };
             processPage();
         }
-    }, [currentPageIndex, chapter, scale, currentPage, isPlaying]); // Added isPlaying dependency
+    }, [currentPageIndex, chapter, currentPage, isPlaying]); // Removed scale to prevent re-rendering PDF on zoom (handled by CSS)
     // Note: If we want high quality zoom, we should re-render with higher scale prop when zooming, 
     // OR just render at high enough resolution (e.g. 2x) initially and let CSS transform handle it.
     // CSS transform is faster. Let's render at generic high res.
@@ -363,14 +359,24 @@ const Reader: React.FC = () => {
         <div
             className={styles.container}
             data-script-length={pageScript.length} // Debug / Linter fix
-            onWheel={handleWheel}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            // Event listeners attached via ref
+            onMouseDown={(e) => {
+                if (scale > 1) {
+                    isDragging.current = true;
+                    lastMousePos.current = { x: e.clientX, y: e.clientY };
+                    e.preventDefault();
+                }
+            }}
+            onMouseMove={(e) => {
+                if (isDragging.current && scale > 1) {
+                    const deltaX = e.clientX - lastMousePos.current.x;
+                    const deltaY = e.clientY - lastMousePos.current.y;
+                    setPosition({ x: position.x + deltaX, y: position.y + deltaY });
+                    lastMousePos.current = { x: e.clientX, y: e.clientY };
+                }
+            }}
+            onMouseUp={() => { isDragging.current = false; }}
+            onMouseLeave={() => { isDragging.current = false; }}
             ref={containerRef}
             style={{ cursor: scale > 1 ? (isDragging.current ? 'grabbing' : 'grab') : 'default' }}
         >

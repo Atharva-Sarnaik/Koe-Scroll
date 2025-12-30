@@ -17,8 +17,8 @@
         "EXPO_PUBLIC_SUPABASE_URL": "https://iktohtvvsptsiauedzfr.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_lMC8yjvxwedurT49pv-k-Q_d0EfhliV",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "659700657654-pf3ud568p4ao816r8ountbtmov674n1f.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GEMINI_API_KEY": "REPLACE_WITH_YOUR_GEMINI_KEY",
-        "EXPO_PUBLIC_ELEVENLABS_API_KEY": "REPLACE_WITH_YOUR_ELEVENLABS_KEY"
+        "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyAEWDjzRK5P95EnS7-_LCsmOQWlt4QR1DQ",
+        "EXPO_PUBLIC_ELEVENLABS_API_KEY": "sk_89faa90198826d1e7102382132bfa3359e7000ffca36f7d2"
       }
     },
     "production": {

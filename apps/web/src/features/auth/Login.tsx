@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Chrome } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -6,20 +6,26 @@ import styles from './Auth.module.css';
 import ThemeToggle from '../../components/ThemeToggle';
 
 const Login: React.FC = () => {
-    const { signInWithGoogle, signInWithEmail } = useAuth();
+    const { signInWithGoogle, signInWithEmail, user, loading } = useAuth();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
+    useEffect(() => {
+        if (!loading && user) {
+            navigate('/app');
+        }
+    }, [user, loading, navigate]);
+
     const handleGoogleLogin = async () => {
-        setLoading(true);
+        setIsSubmitting(true);
         setError('');
         try {
             await signInWithGoogle();
         } catch (err: any) {
             console.error('Login failed:', err);
             setError(err.message || 'Failed to sign in with Google');
-            setLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -34,7 +40,7 @@ const Login: React.FC = () => {
             return;
         }
 
-        setLoading(true);
+        setIsSubmitting(true);
         setError('');
 
         try {
@@ -48,7 +54,7 @@ const Login: React.FC = () => {
             } else {
                 setError(err.message || 'Failed to sign in');
             }
-            setLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -110,8 +116,8 @@ const Login: React.FC = () => {
                             />
                         </div>
 
-                        <button type="submit" className={styles.submitBtn} disabled={loading}>
-                            {loading ? <div className="loader small" /> : 'Log in'}
+                        <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+                            {isSubmitting ? <div className="loader small" /> : 'Log in'}
                         </button>
                     </form>
 
@@ -121,7 +127,7 @@ const Login: React.FC = () => {
 
                     <button
                         onClick={handleGoogleLogin}
-                        disabled={loading}
+                        disabled={isSubmitting}
                         className={styles.googleBtn}
                     >
                         <Chrome size={20} />

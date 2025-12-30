@@ -3,6 +3,7 @@
     "name": "KoeScroll",
     "slug": "koescroll",
     "version": "1.0.0",
+    "scheme": "koescroll",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",

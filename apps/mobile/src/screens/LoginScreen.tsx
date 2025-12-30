@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { COLORS, SPACING } from '../constants/theme';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export default function LoginScreen() {
     const navigation = useNavigation<any>();
@@ -13,6 +15,13 @@ export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        GoogleSignin.configure({
+            webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+            scopes: ['profile', 'email'],
+        });
+    }, []);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -22,7 +31,6 @@ export default function LoginScreen() {
         setLoading(true);
         try {
             await signInWithEmail(email, password);
-            // Navigation is handled by AppNavigator listening to auth state
         } catch (error: any) {
             Alert.alert('Login Failed', error.message);
         } finally {
@@ -30,8 +38,35 @@ export default function LoginScreen() {
         }
     };
 
-    const handleGoogleLogin = () => {
-        Alert.alert('Coming Soon', 'Google Sign-In needs configuration.');
+    const handleGoogleLogin = async () => {
+        try {
+            await GoogleSignin.hasPlayServices();
+            const userInfo = await GoogleSignin.signIn();
+
+            if (userInfo.data?.idToken) {
+                const { data, error } = await supabase.auth.signInWithIdToken({
+                    provider: 'google',
+                    token: userInfo.data.idToken,
+                });
+
+                if (error) throw error;
+                // Navigation handled by auth listener
+            } else {
+                throw new Error('No ID token present!');
+            }
+
+        } catch (error: any) {
+            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+                // user cancelled the login flow
+            } else if (error.code === statusCodes.IN_PROGRESS) {
+                // operation (e.g. sign in) is in progress already
+            } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+                Alert.alert('Error', 'Google Play Services not available or outdated.');
+            } else {
+                console.error(error);
+                Alert.alert('Google Login Failed', error.message);
+            }
+        }
     };
 
     return (
@@ -94,7 +129,7 @@ export default function LoginScreen() {
                             title="Google"
                             variant="google"
                             onPress={handleGoogleLogin}
-                            icon={<Text style={{ fontSize: 18 }}>G </Text>} // Simple G icon representation
+                            icon={<Text style={{ fontSize: 18 }}>G </Text>}
                         />
 
                         <View style={styles.footer}>

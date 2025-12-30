@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Sparkles, PlayCircle, Sun, Moon, BookOpen, Info, Volume2, Zap, Heart } from 'lucide-react';
 import styles from './LandingPage.module.css';
 
@@ -25,7 +26,15 @@ import { useTheme } from '../hooks/useTheme';
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
+    const { user, loading } = useAuth(); // Add useAuth
     const isDark = theme === 'dark';
+
+    // Redirect to app if already logged in
+    useEffect(() => {
+        if (!loading && user) {
+            navigate('/app');
+        }
+    }, [user, loading, navigate]);
 
     // Scroll progress state
     const [scrollProgress, setScrollProgress] = useState(0);

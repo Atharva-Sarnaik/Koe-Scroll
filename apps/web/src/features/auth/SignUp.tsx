@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Chrome } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -6,21 +6,27 @@ import styles from './Auth.module.css';
 import ThemeToggle from '../../components/ThemeToggle';
 
 const SignUp: React.FC = () => {
-    const { signInWithGoogle, signUpWithEmail } = useAuth();
+    const { signInWithGoogle, signUpWithEmail, user, loading } = useAuth();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
 
+    useEffect(() => {
+        if (!loading && user) {
+            navigate('/app');
+        }
+    }, [user, loading, navigate]);
+
     const handleGoogleSignUp = async () => {
-        setLoading(true);
+        setIsSubmitting(true);
         setError('');
         try {
             await signInWithGoogle();
         } catch (err: any) {
             console.error('Signup failed:', err);
             setError(err.message || 'Failed to sign up with Google');
-            setLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -46,20 +52,20 @@ const SignUp: React.FC = () => {
             return;
         }
 
-        setLoading(true);
+        setIsSubmitting(true);
         setError('');
         setSuccessMessage('');
 
         try {
             await signUpWithEmail(email, password);
             setSuccessMessage('Account created! Please check your email/login.');
-            setLoading(false);
+            setIsSubmitting(false);
             // Optionally navigate or wait for verify
             setTimeout(() => navigate('/login'), 2000);
         } catch (err: any) {
             console.error('Signup failed:', err);
             setError(err.message || 'Failed to create account');
-            setLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -134,8 +140,8 @@ const SignUp: React.FC = () => {
                             />
                         </div>
 
-                        <button type="submit" className={styles.submitBtn} disabled={loading}>
-                            {loading ? <div className="loader small" /> : 'Sign Up'}
+                        <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+                            {isSubmitting ? <div className="loader small" /> : 'Sign Up'}
                         </button>
                     </form>
 
@@ -145,7 +151,7 @@ const SignUp: React.FC = () => {
 
                     <button
                         onClick={handleGoogleSignUp}
-                        disabled={loading}
+                        disabled={isSubmitting}
                         className={styles.googleBtn}
                     >
                         <Chrome size={20} />

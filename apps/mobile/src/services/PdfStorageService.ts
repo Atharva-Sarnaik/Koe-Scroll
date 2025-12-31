@@ -1,7 +1,6 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import PdfThumbnail from 'react-native-pdf-thumbnail';
 
 const PDF_DIR = FileSystem.documentDirectory + 'mangas/';
 const COVERS_DIR = FileSystem.documentDirectory + 'covers/';
@@ -11,7 +10,6 @@ export interface LocalManga {
     id: string;
     title: string;
     uri: string;
-    cover?: any; // Added cover
     fileName: string;
     lastModified: number;
     currentPage: number;
@@ -53,31 +51,10 @@ export const PdfStorageService = {
                 to: newUri
             });
 
-            // Generate Cover
-            let coverUri = null;
-            try {
-                // Generate result returns array of objects { uri, width, height }
-                const thumbnails = await PdfThumbnail.generate(newUri, 0);
-                if (thumbnails && thumbnails.length > 0) {
-                    const thumb = thumbnails[0];
-                    const targetCoverUri = COVERS_DIR + file.name.replace('.pdf', '') + '.jpg';
-
-                    // Move from cache to covers dir
-                    await FileSystem.moveAsync({
-                        from: thumb.uri,
-                        to: targetCoverUri
-                    });
-                    coverUri = targetCoverUri;
-                }
-            } catch (e) {
-                console.error('Error generating cover:', e);
-            }
-
             return {
                 id: Date.now().toString(),
                 title: file.name.replace('.pdf', ''),
                 uri: newUri,
-                cover: coverUri ? { uri: coverUri } : null, // Return immediate object so UI updates
                 fileName: file.name,
                 lastModified: Date.now(),
                 currentPage: 1,

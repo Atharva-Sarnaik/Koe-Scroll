@@ -28,6 +28,10 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      "@config-plugins/react-native-pdf",
+      "@config-plugins/react-native-blob-util"
+    ],
     "extra": {
       "eas": {
         "projectId": "ec42ee1d-54a4-4deb-b6ed-9da8f92b1b39"

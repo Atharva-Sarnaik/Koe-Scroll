@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, TextInput, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import Pdf from 'react-native-pdf';
 import { Database, BarChart2, Mic, Search, Clock, BookOpen, Play, ChevronDown, FileText, Plus, Trash2 } from 'lucide-react-native';
 import { DISCOVER_ITEMS } from '../data/mockDiscover';
 import { SPACING } from '../constants/theme';
@@ -125,13 +126,18 @@ export default function LibraryScreen() {
                 renderItem={({ item }) => (
                     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                         {/* Dynamic Cover */}
-                        {item.cover ? (
-                            <Image source={item.cover} style={styles.cover} />
-                        ) : (
-                            <View style={[styles.cover, { backgroundColor: colors.surfaceElevated, alignItems: 'center', justifyContent: 'center' }]}>
-                                <FileText size={24} color={colors.textSecondary} />
-                            </View>
-                        )}
+                        {/* Direct PDF Rendering for Cover */}
+                        <View style={[styles.cover, { overflow: 'hidden', backgroundColor: colors.surfaceElevated }]} pointerEvents="none">
+                            <Pdf
+                                source={{ uri: item.uri, cache: true }}
+                                page={1}
+                                singlePage={true}
+                                style={{ flex: 1, width: '100%', height: '100%', backgroundColor: colors.surfaceElevated }}
+                                fitPolicy={0} // Width
+                                enablePaging={true}
+                                scale={1.0}
+                            />
+                        </View>
 
                         <View style={styles.cardContent}>
                             <View style={styles.rowBetween}>

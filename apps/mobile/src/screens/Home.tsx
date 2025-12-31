@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ImageBackground, Dimensions, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Play, Settings, Trophy, FileText } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import Pdf from 'react-native-pdf';
 import { SPACING } from '../constants/theme';
 import { DISCOVER_ITEMS } from '../data/mockDiscover';
 import { PdfStorageService } from '../services/PdfStorageService';
@@ -135,13 +135,10 @@ export default function HomeScreen() {
                             style={[styles.heroCard, { borderColor: colors.border, backgroundColor: colors.surface }]}
                             onPress={handleResume}
                         >
-                            <ImageBackground
-                                source={recentBook.cover ? recentBook.cover : null}
+                            <View
                                 style={styles.heroBg}
-                                imageStyle={{ opacity: 0.4 }}
-                                blurRadius={10}
                             >
-                                {!recentBook.cover && <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surfaceElevated }]} />}
+                                <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surfaceElevated }]} />
 
                                 <LinearGradient
                                     colors={['transparent', theme === 'dark' ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.9)']}
@@ -161,16 +158,20 @@ export default function HomeScreen() {
                                             <Play fill={theme === 'dark' ? 'black' : 'white'} color={theme === 'dark' ? 'black' : 'white'} size={24} style={{ marginLeft: 4 }} />
                                         </TouchableOpacity>
 
-                                        {recentBook.cover ? (
-                                            <Image source={recentBook.cover} style={styles.heroCover} />
-                                        ) : (
-                                            <View style={[styles.heroCover, { backgroundColor: colors.surfaceElevated, alignItems: 'center', justifyContent: 'center' }]}>
-                                                <FileText color={colors.textSecondary} size={40} />
-                                            </View>
-                                        )}
+                                        {/* Direct PDF Render for Hero Cover */}
+                                        <View style={[styles.heroCover, { overflow: 'hidden', backgroundColor: colors.surfaceElevated }]} pointerEvents="none">
+                                            <Pdf
+                                                source={{ uri: recentBook.uri, cache: true }}
+                                                page={1}
+                                                singlePage={true}
+                                                style={{ flex: 1, width: '100%', height: '100%', backgroundColor: colors.surfaceElevated }}
+                                                fitPolicy={0} // Width
+                                                scale={1.0}
+                                            />
+                                        </View>
                                     </View>
                                 </LinearGradient>
-                            </ImageBackground>
+                            </View>
                         </TouchableOpacity>
                     ) : (
                         <TouchableOpacity

@@ -44,3 +44,6 @@ web-build/
 
 # Capacitor
 capacitor.config.json.timestamp
+
+# Credentials
+apps/mobile/eas.json

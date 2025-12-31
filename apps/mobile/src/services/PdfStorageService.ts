@@ -1,14 +1,17 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import PdfThumbnail from 'react-native-pdf-thumbnail';
 
 const PDF_DIR = FileSystem.documentDirectory + 'mangas/';
+const COVERS_DIR = FileSystem.documentDirectory + 'covers/';
 const PROGRESS_KEY_PREFIX = 'pdf_progress_';
 
 export interface LocalManga {
     id: string;
     title: string;
     uri: string;
+    cover?: any; // Added cover
     fileName: string;
     lastModified: number;
     currentPage: number;
@@ -21,6 +24,11 @@ export const PdfStorageService = {
         const dirInfo = await FileSystem.getInfoAsync(PDF_DIR);
         if (!dirInfo.exists) {
             await FileSystem.makeDirectoryAsync(PDF_DIR, { intermediates: true });
+        }
+
+        const coverDirInfo = await FileSystem.getInfoAsync(COVERS_DIR);
+        if (!coverDirInfo.exists) {
+            await FileSystem.makeDirectoryAsync(COVERS_DIR, { intermediates: true });
         }
     },
 
@@ -45,10 +53,31 @@ export const PdfStorageService = {
                 to: newUri
             });
 
+            // Generate Cover
+            let coverUri = null;
+            try {
+                // Generate result returns array of objects { uri, width, height }
+                const thumbnails = await PdfThumbnail.generate(newUri, 0);
+                if (thumbnails && thumbnails.length > 0) {
+                    const thumb = thumbnails[0];
+                    const targetCoverUri = COVERS_DIR + file.name.replace('.pdf', '') + '.jpg';
+
+                    // Move from cache to covers dir
+                    await FileSystem.moveAsync({
+                        from: thumb.uri,
+                        to: targetCoverUri
+                    });
+                    coverUri = targetCoverUri;
+                }
+            } catch (e) {
+                console.error('Error generating cover:', e);
+            }
+
             return {
                 id: Date.now().toString(),
                 title: file.name.replace('.pdf', ''),
                 uri: newUri,
+                cover: coverUri ? { uri: coverUri } : null, // Return immediate object so UI updates
                 fileName: file.name,
                 lastModified: Date.now(),
                 currentPage: 1,
@@ -73,7 +102,7 @@ export const PdfStorageService = {
                     const uri = PDF_DIR + fileName;
                     const info = await FileSystem.getInfoAsync(uri);
 
-                    const coverUri = FileSystem.documentDirectory + 'covers/' + fileName.replace('.pdf', '') + '.jpg';
+                    const coverUri = COVERS_DIR + fileName.replace('.pdf', '') + '.jpg';
                     const coverInfo = await FileSystem.getInfoAsync(coverUri);
 
                     // Fetch progress
@@ -123,7 +152,7 @@ export const PdfStorageService = {
             const uri = PDF_DIR + fileName;
             await FileSystem.deleteAsync(uri, { idempotent: true });
 
-            const coverUri = FileSystem.documentDirectory + 'covers/' + fileName.replace('.pdf', '') + '.jpg';
+            const coverUri = COVERS_DIR + fileName.replace('.pdf', '') + '.jpg';
             await FileSystem.deleteAsync(coverUri, { idempotent: true });
 
             await AsyncStorage.removeItem(PROGRESS_KEY_PREFIX + fileName);

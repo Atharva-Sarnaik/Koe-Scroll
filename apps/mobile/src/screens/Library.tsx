@@ -132,10 +132,12 @@ export default function LibraryScreen() {
                                 source={{ uri: item.uri, cache: true }}
                                 page={1}
                                 singlePage={true}
+                                trustAllCerts={false}
                                 style={{ flex: 1, width: '100%', height: '100%', backgroundColor: colors.surfaceElevated }}
-                                fitPolicy={0} // Width
+                                fitPolicy={0}
                                 enablePaging={true}
                                 scale={1.0}
+                                onError={(error) => console.log('PDF Error:', error)}
                             />
                         </View>
 

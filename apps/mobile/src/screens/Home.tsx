@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ImageBackground, Dimensions, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Play, Settings, Trophy, FileText } from 'lucide-react-native';
@@ -164,9 +165,11 @@ export default function HomeScreen() {
                                                 source={{ uri: recentBook.uri, cache: true }}
                                                 page={1}
                                                 singlePage={true}
+                                                trustAllCerts={false}
                                                 style={{ flex: 1, width: '100%', height: '100%', backgroundColor: colors.surfaceElevated }}
                                                 fitPolicy={0} // Width
                                                 scale={1.0}
+                                                onError={(error) => console.log('PDF Error:', error)}
                                             />
                                         </View>
                                     </View>

@@ -3,7 +3,7 @@
 > **Manga that speaks back.**
 > *A cross-platform AI Manga Dubbing ecosystem built for the Dreamflow Buildathon.*
 
-![Koe Scroll Logo](./uploaded_image_1767344569006.png)
+![Koe Scroll Logo](apps/mobile/assets/icon.png)
 
 ## 📖 Overview
 
